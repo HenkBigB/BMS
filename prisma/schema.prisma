@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  user
+}
+
+enum SiteType {
+  source
+  target
+}
+
+enum PhotoScope {
+  building
+  floor
+  room
+}
+
+enum WeightStatus {
+  estimated
+  confirmed
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(user)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sites     Site[]
+}
+
+model Site {
+  id        String   @id @default(uuid())
+  projectId String
+  type      SiteType
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+  buildings Building[]
+}
+
+model Building {
+  id        String   @id @default(uuid())
+  siteId    String
+  name      String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  site      Site     @relation(fields: [siteId], references: [id])
+  floors    Floor[]
+  photos    Photo[]
+}
+
+model Floor {
+  id        String   @id @default(uuid())
+  buildingId String
+  label     String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  building  Building @relation(fields: [buildingId], references: [id])
+  rooms     Room[]
+  photos    Photo[]
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  floorId   String
+  roomId    String
+  roomTypeId String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  floor     Floor    @relation(fields: [floorId], references: [id])
+  roomType  RoomType? @relation(fields: [roomTypeId], references: [id])
+  lineItems RoomLineItem[]
+  singleItems SingleItem[]
+  photos    Photo[]
+}
+
+model FurnitureType {
+  id            String  @id @default(uuid())
+  name          String
+  unitVolumeCbm Float
+  allowsDecimal Boolean @default(false)
+  active        Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RoomLineItem {
+  id                  String  @id @default(uuid())
+  roomId              String
+  furnitureTypeId     String
+  snapshotName        String
+  snapshotUnitVolume  Float
+  quantity            Float
+  variantLabel        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  room                Room @relation(fields: [roomId], references: [id])
+  furnitureType        FurnitureType @relation(fields: [furnitureTypeId], references: [id])
+  attributes           RoomLineItemAttribute[]
+}
+
+model AttributeGroup {
+  id            String  @id @default(uuid())
+  name          String
+  multiSelect   Boolean @default(false)
+  allowFreeText Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  values        AttributeValue[]
+}
+
+model AttributeValue {
+  id        String @id @default(uuid())
+  groupId   String
+  value     String
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  group     AttributeGroup @relation(fields: [groupId], references: [id])
+}
+
+model AttributeSuggestion {
+  id        String @id @default(uuid())
+  groupId   String
+  value     String
+  status    String @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  group     AttributeGroup @relation(fields: [groupId], references: [id])
+}
+
+model RoomLineItemAttribute {
+  id             String @id @default(uuid())
+  roomLineItemId String
+  attributeValueId String
+  roomLineItem   RoomLineItem @relation(fields: [roomLineItemId], references: [id])
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id])
+}
+
+model PhotoType {
+  id        String @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  photos    Photo[]
+}
+
+model RoomType {
+  id        String @id @default(uuid())
+  name      String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rooms     Room[]
+}
+
+model Photo {
+  id         String @id @default(uuid())
+  scope      PhotoScope
+  buildingId String?
+  floorId    String?
+  roomId     String?
+  note       String?
+  photoTypeId String?
+  url        String
+  createdAt  DateTime @default(now())
+  building   Building? @relation(fields: [buildingId], references: [id])
+  floor      Floor? @relation(fields: [floorId], references: [id])
+  room       Room? @relation(fields: [roomId], references: [id])
+  photoType  PhotoType? @relation(fields: [photoTypeId], references: [id])
+}
+
+model SingleItemCategory {
+  id        String @id @default(uuid())
+  name      String
+  critical  Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     SingleItem[]
+}
+
+model SingleItem {
+  id          String @id @default(uuid())
+  roomId      String
+  categoryId  String
+  label       String?
+  lengthCm    Float?
+  widthCm     Float?
+  heightCm    Float?
+  weightKg    Float?
+  weightStatus WeightStatus?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  room        Room @relation(fields: [roomId], references: [id])
+  category    SingleItemCategory @relation(fields: [categoryId], references: [id])
+  attributes  SingleItemAttribute[]
+}
+
+model SingleItemAttribute {
+  id              String @id @default(uuid())
+  singleItemId    String
+  attributeValueId String
+  singleItem      SingleItem @relation(fields: [singleItemId], references: [id])
+  attributeValue  AttributeValue @relation(fields: [attributeValueId], references: [id])
+}

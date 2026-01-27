@@ -6,9 +6,7 @@ services:
     environment:
       POSTGRES_DB: bms
       POSTGRES_USER: bms
-      POSTGRES_PASSWORD: bms
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -16,21 +14,18 @@ services:
     image: minio/minio:RELEASE.2024-07-16T23-46-41Z
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: bms
-      MINIO_ROOT_PASSWORD: bmssecret
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
 
   nextjs-app:
     build: .
     environment:
-      DATABASE_URL: postgresql://bms:bms@postgres:5432/bms
+      DATABASE_URL: postgresql://bms:${POSTGRES_PASSWORD}@postgres:5432/bms
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: bms
-      MINIO_SECRET_KEY: bmssecret
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: bms-photos
       NEXT_PUBLIC_APP_NAME: BMS
     ports:

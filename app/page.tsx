@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 export default function HomePage() {
   return (
     <div className="grid">
@@ -29,18 +27,10 @@ export default function HomePage() {
       <section className="card">
         <h2>Quick Actions</h2>
         <div className="tile-grid">
-          <Link href="/projects/new" className="tile">
-            Neues Projekt
-          </Link>
-          <Link href="/projects" className="tile">
-            Projekt öffnen
-          </Link>
-          <Link href="/offline" className="tile">
-            Offline Daten
-          </Link>
-          <Link href="/exports" className="tile">
-            Export anstoßen
-          </Link>
+          <div className="tile">Neues Projekt</div>
+          <div className="tile">Projekt öffnen</div>
+          <div className="tile">Offline Daten</div>
+          <div className="tile">Export anstoßen</div>
         </div>
       </section>
     </div>

@@ -7,21 +7,6 @@ mit IndexedDB + Outbox-Queue.
 
 ## Setup / Run
 
-### Fresh Install (Ubuntu 24.04 + Docker)
-```bash
-git clone <repo-url>
-cd BMS
-cp .env.example .env
-docker compose up -d --build
-```
-Öffnen: `http://<server-ip>:3000`
-
-**Hinweise**
-- Nur Port **3000** ist nach außen freigegeben (DB/MinIO nur intern im Docker-Netz).
-- Testpasswort (bis Ende der Testphase): **BMS2026**.
-- Logs anzeigen: `docker compose logs -f nextjs-app`
-- Restart: `docker compose restart nextjs-app`
-
 ### Lokal (Node)
 1. `.env.example` nach `.env` kopieren und anpassen.
 2. Abhängigkeiten installieren:
@@ -47,7 +32,6 @@ docker compose up -d --build
 docker compose up --build
 ```
 Die App läuft unter `http://<server-ip>:3000`.
-Postgres und MinIO laufen nur intern und sind nicht extern gemappt.
 
 ## Offline-Konzept
 - **App Shell Cache**: Service Worker cached die wichtigsten Routen (PWA).
@@ -68,16 +52,12 @@ Folgende Seeds werden initial angelegt:
 
 **Admin-Login (Seed)**
 - Benutzer: `admin@example.local`
-- Passwort: `BMS2026`
+- Passwort: `admin123`
 
 ## Backup-Hinweise
 - **Postgres**: Regelmäßige Dumps (`pg_dump`) in ein gesichertes Backup-Verzeichnis.
 - **MinIO**: `mc mirror` auf ein externes Backup-Target.
 - Empfehlung: tägliche inkrementelle Backups + wöchentliche Vollbackups.
-
-## Infrastruktur-Hinweis (MinIO Pin)
-Das MinIO-Image ist auf `RELEASE.2023-10-25T06-33-25Z` gepinnt, um eine
-Inkompatibilität mit CPUs ohne x86-64-v2 Features zu vermeiden.
 
 ## Assumptions
 - Offline ist online-first mit IndexedDB + Outbox (bei Sync automatische Übertragung).

@@ -91,7 +91,7 @@ async function seedCatalog() {
 }
 
 async function seedAdminUser() {
-  const passwordHash = await bcrypt.hash('admin123', 10);
+  const passwordHash = await bcrypt.hash('BMS2026', 10);
   await prisma.user.create({
     data: {
       email: 'admin@example.local',

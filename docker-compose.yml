@@ -18,7 +18,7 @@ services:
       - minio_data:/data
 
   minio-init:
-    image: minio/mc:latest
+    image: alpine:3.20
     depends_on:
       - minio
     environment:
@@ -26,13 +26,9 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET: ${MINIO_BUCKET}
-    entrypoint: ["sh", "-c"]
-    command:
-      - >
-        until mc alias set bms ${MINIO_ENDPOINT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-        do sleep 2;
-        done &&
-        mc mb -p bms/${MINIO_BUCKET} || true
+    entrypoint: /bin/sh
+    command: -ec "apk add --no-cache curl >/dev/null; curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc; chmod +x /usr/local/bin/mc; for n in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60; do mc alias set bms \"${MINIO_ENDPOINT}\" \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" >/dev/null 2>&1 && break; echo \"waiting for minio...\"; sleep 2; done; mc alias set bms \"${MINIO_ENDPOINT}\" \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" >/dev/null 2>&1 || { echo \"minio not ready\"; exit 1; }; mc mb -p \"bms/${MINIO_BUCKET}\" >/dev/null 2>&1 || true; mc anonymous set download \"bms/${MINIO_BUCKET}\" >/dev/null 2>&1 || true; echo \"minio bucket init done\";"
+
 
   nextjs-app:
     build: .
